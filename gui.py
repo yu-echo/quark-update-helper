@@ -159,25 +159,35 @@ class App(ctk.CTk):
 
     F = "Microsoft YaHei UI"
 
-    # 暖色调
-    C_BG = "#1b1410"
-    C_CARD = "#261c16"
-    C_LINE = "#3d2d21"
-    C_MAIN = "#e08a3c"
-    C_MAIN_H = "#f0a05a"
-    C_TEXT = "#f4e9dd"
-    C_DIM = "#a2907e"
-    C_OK = "#9cc06a"
-    C_WARN = "#e0a33c"
-    C_ERR = "#d9603f"
+    # 简约明亮：白卡片 + 浅灰底 + 单一品牌蓝（与 app.ico 同色）
+    C_BG = "#f4f6fa"
+    C_CARD = "#ffffff"
+    C_LINE = "#e3e9f2"
+    C_MAIN = "#2e6bda"
+    C_MAIN_H = "#4a82f0"
+    C_TEXT = "#111827"
+    C_DIM = "#8b96a5"
+    C_OK = "#16a34a"
+    C_WARN = "#d97706"
+    C_ERR = "#dc2626"
+    C_SOFT = "#f7f9fc"          # 日志区 / 徽章底色
+
+    # 状态徽章的淡色底，按状态文字色查
+    TINT = {
+        "#2e6bda": "#e9effc",
+        "#16a34a": "#e8f7ee",
+        "#d97706": "#fdf2e3",
+        "#dc2626": "#fdeaea",
+        "#8b96a5": "#eef1f6",
+    }
 
     def __init__(self):
         super().__init__()
-        ctk.set_appearance_mode("dark")
+        ctk.set_appearance_mode("light")
         self.cfg = ensure_config()
 
         self.title(APP_NAME)
-        self.geometry("470x392")
+        self.geometry("472x410")
         self.resizable(False, False)
         self.configure(fg_color=self.C_BG)
         try:
@@ -208,63 +218,94 @@ class App(ctk.CTk):
 
     # -------------------------------------------------------------- UI
     def _build(self):
+        # ── 顶部：标题 + 状态徽章
         top = ctk.CTkFrame(self, fg_color="transparent")
-        top.pack(fill="x", padx=18, pady=(13, 0))
-        ctk.CTkLabel(top, text=APP_NAME, font=(self.F, 16, "bold"),
+        top.pack(fill="x", padx=20, pady=(16, 0))
+        ctk.CTkLabel(top, text=APP_NAME, font=(self.F, 17, "bold"),
                      text_color=self.C_TEXT).pack(side="left")
-        self.lbl_state = ctk.CTkLabel(top, text="启动中…", font=(self.F, 11),
-                                      text_color=self.C_MAIN, height=14)
-        self.lbl_state.pack(side="right")
+
+        self.pill = ctk.CTkFrame(top, fg_color=self.TINT[self.C_MAIN],
+                                 corner_radius=10, height=22)
+        self.pill.pack(side="right", pady=(4, 0))
+        self.lbl_state = ctk.CTkLabel(self.pill, text="启动中…", font=(self.F, 10),
+                                      text_color=self.C_MAIN, height=20)
+        self.lbl_state.pack(padx=10, pady=1)
 
         self.lbl_share = ctk.CTkLabel(self, text="正在连接…", font=(self.F, 10),
                                       text_color=self.C_DIM, anchor="w", height=14)
-        self.lbl_share.pack(fill="x", padx=18)
+        self.lbl_share.pack(fill="x", padx=20, pady=(3, 0))
 
-        vf = ctk.CTkFrame(self, fg_color=self.C_CARD, corner_radius=9,
-                          border_width=1, border_color=self.C_LINE)
-        vf.pack(fill="x", padx=18, pady=(8, 8))
-        self.lbl_local = ctk.CTkLabel(vf, text="本地 —", font=(self.F, 12),
-                                      text_color=self.C_TEXT)
-        self.lbl_local.pack(side="left", padx=14, pady=8)
-        self.lbl_remote = ctk.CTkLabel(vf, text="网盘 —", font=(self.F, 12),
-                                       text_color=self.C_TEXT)
-        self.lbl_remote.pack(side="right", padx=14, pady=8)
+        # ── 版本卡：两栏 + 细竖线（固定高度，CTkFrame 默认 200px 会撑爆布局）
+        vf = ctk.CTkFrame(self, fg_color=self.C_CARD, corner_radius=12,
+                          border_width=1, border_color=self.C_LINE, height=88)
+        vf.pack(fill="x", padx=20, pady=(12, 10))
+        vf.pack_propagate(False)
 
-        self.logbox = ctk.CTkTextbox(self, font=("Consolas", 10), wrap="word",
-                                     fg_color=self.C_CARD, text_color=self.C_TEXT,
+        ctk.CTkLabel(vf, text="本地", font=(self.F, 9),
+                     text_color=self.C_DIM, anchor="w", height=12
+                     ).place(x=18, y=11)
+        self.lbl_local = ctk.CTkLabel(vf, text="—", font=(self.F, 15, "bold"),
+                                      text_color=self.C_TEXT, anchor="w", height=22)
+        self.lbl_local.place(x=18, y=26)
+        self.lbl_local_sub = ctk.CTkLabel(vf, text="未下载", font=(self.F, 9),
+                                          text_color=self.C_DIM, anchor="w", height=12)
+        self.lbl_local_sub.place(x=18, y=57)
+
+        ctk.CTkFrame(vf, width=1, height=60, fg_color=self.C_LINE).place(
+            relx=0.5, y=14)
+
+        ctk.CTkLabel(vf, text="网盘", font=(self.F, 9),
+                     text_color=self.C_DIM, anchor="w", height=12
+                     ).place(relx=0.5, x=18, y=11)
+        self.lbl_remote = ctk.CTkLabel(vf, text="—", font=(self.F, 15, "bold"),
+                                       text_color=self.C_TEXT, anchor="w", height=22)
+        self.lbl_remote.place(relx=0.5, x=18, y=26)
+        self.lbl_remote_sub = ctk.CTkLabel(vf, text="查询中", font=(self.F, 9),
+                                           text_color=self.C_DIM, anchor="w", height=12)
+        self.lbl_remote_sub.place(relx=0.5, x=18, y=57)
+
+        # ── 底部（先占位，最后再放日志，否则底栏会被 expand 挤没）
+        bot = ctk.CTkFrame(self, fg_color="transparent")
+        bot.pack(side="bottom", fill="x", padx=20, pady=(4, 12))
+        self.lbl_hint = ctk.CTkLabel(bot, text="", font=(self.F, 9),
+                                     text_color=self.C_DIM, height=14)
+        self.lbl_hint.pack(side="left")
+        ctk.CTkButton(bot, text="设置", width=52, height=24, corner_radius=8,
+                      fg_color=self.C_CARD, hover_color=self.TINT[self.C_MAIN],
+                      text_color=self.C_DIM, border_width=1,
+                      border_color=self.C_LINE, font=(self.F, 9),
+                      command=self.open_settings).pack(side="right")
+        ctk.CTkLabel(bot, text="by Echo", font=(self.F, 9),
+                     text_color=self.C_DIM).pack(side="right", padx=(0, 10))
+
+        # ── 进度条（在底栏上方）
+        self.progress = ctk.CTkProgressBar(self, height=3, corner_radius=2,
+                                           fg_color="#e8edf5",
+                                           progress_color=self.C_MAIN)
+        self.progress.pack(side="bottom", fill="x", padx=20, pady=(8, 0))
+        self.progress.set(0)
+        self.progress.configure(progress_color="#e8edf5")   # 空闲不显示蓝点
+
+        # ── 日志（吃掉剩余空间）
+        self.logbox = ctk.CTkTextbox(self, font=("Consolas", 9), wrap="word",
+                                     fg_color=self.C_SOFT, text_color="#4b5563",
                                      border_width=1, border_color=self.C_LINE,
-                                     corner_radius=8)
-        self.logbox.pack(fill="both", expand=True, padx=18)
+                                     corner_radius=12, scrollbar_button_color=self.C_LINE,
+                                     scrollbar_button_hover_color="#d3dae6")
+        self.logbox.pack(fill="both", expand=True, padx=20, pady=(0, 2))
         # 内层 tk.Text 默认贴边，首字会被圆角/边框啃掉半个
         try:
-            self.logbox._textbox.configure(padx=10, pady=8)
+            self.logbox._textbox.configure(padx=12, pady=10)
         except Exception:
             pass
         self.logbox.configure(state="disabled")
 
-        self.progress = ctk.CTkProgressBar(self, height=5, corner_radius=3,
-                                           fg_color=self.C_LINE,
-                                           progress_color=self.C_MAIN)
-        self.progress.pack(fill="x", padx=18, pady=(8, 2))
-        self.progress.set(0)
-
-        bot = ctk.CTkFrame(self, fg_color="transparent")
-        bot.pack(fill="x", padx=18, pady=(2, 11))
-        self.lbl_hint = ctk.CTkLabel(bot, text="", font=(self.F, 10),
-                                     text_color=self.C_DIM, height=14)
-        self.lbl_hint.pack(side="left")
-        ctk.CTkButton(bot, text="⚙", width=28, height=24, corner_radius=6,
-                      fg_color="transparent", hover_color=self.C_CARD,
-                      text_color=self.C_DIM, border_width=1,
-                      border_color=self.C_LINE, command=self.open_settings
-                      ).pack(side="right")
-        ctk.CTkLabel(bot, text="by Echo", font=(self.F, 9),
-                     text_color="#9d8571").pack(side="right", padx=(0, 8))
-
     # -------------------------------------------------------------- 小工具
     def set_state(self, text: str, color: str = ""):
         color = color or self.C_MAIN
-        self.after(0, lambda: self.lbl_state.configure(text=text, text_color=color))
+        tint = self.TINT.get(color, self.C_SOFT)
+        self.after(0, lambda: (self.lbl_state.configure(text=text, text_color=color),
+                               self.pill.configure(fg_color=tint)))
 
     def say(self, msg: str):
         qw.log.info(msg)
@@ -274,12 +315,18 @@ class App(ctk.CTk):
 
     def refresh_labels(self):
         if self.local_exe and self.local_mtime:
-            lv = f"本地 v{self.local_ver} · {datetime.fromtimestamp(self.local_mtime):%m-%d %H:%M}"
+            lv = f"v{self.local_ver}" if self.local_ver else "已下载"
+            ls = datetime.fromtimestamp(self.local_mtime).strftime("%m-%d %H:%M")
         else:
-            lv = "本地 未安装"
-        rv = f"网盘 v{self.remote_ver}" if self.remote_ver else "网盘 —"
+            lv, ls = "—", "未下载"
+        if self.remote_ver:
+            rv, rs = f"v{self.remote_ver}", "分享最新"
+        else:
+            rv, rs = "—", "查询中"
         self.after(0, lambda: (self.lbl_local.configure(text=lv),
-                               self.lbl_remote.configure(text=rv)))
+                               self.lbl_local_sub.configure(text=ls),
+                               self.lbl_remote.configure(text=rv),
+                               self.lbl_remote_sub.configure(text=rs)))
 
     def run(self, fn):
         if self.busy:
@@ -413,7 +460,8 @@ class App(ctk.CTk):
 
         self.set_state(f"更新到 v{self.remote_ver or '最新'}…", self.C_WARN)
         self.set_hint("正在下载最新版")
-        self.after(0, lambda: (self.progress.configure(mode="indeterminate"),
+        self.after(0, lambda: (self.progress.configure(mode="indeterminate",
+                                                       progress_color=self.C_MAIN),
                                self.progress.start()))
         path = self._download(latest, info)
         self.after(0, self._stop_progress)
@@ -468,8 +516,17 @@ class App(ctk.CTk):
             self.progress.stop()
             self.progress.configure(mode="determinate")
             self.progress.set(1)
+            self.after(1500, self._idle_progress)   # 留一下蓝色再退回轨道色
         try:
             self.after(0, f)
+        except Exception:
+            pass
+
+    def _idle_progress(self):
+        """空闲时把进度条藏进轨道色 —— 否则 0% 的圆头会在左边留个蓝点"""
+        try:
+            self.progress.configure(progress_color="#e8edf5")
+            self.progress.set(0)
         except Exception:
             pass
 
@@ -543,15 +600,16 @@ class App(ctk.CTk):
             pass
 
         box = ctk.CTkLabel(win, text="正在获取二维码…", width=270, height=270,
-                           fg_color="#ffffff", corner_radius=8,
-                           text_color="#666666")
-        box.pack(pady=(16, 8))
+                           fg_color="#ffffff", corner_radius=12,
+                           border_width=1, border_color=self.C_LINE,
+                           text_color=self.C_DIM)
+        box.pack(pady=(18, 10))
         tip = ctk.CTkLabel(win, text="用微信扫一扫",
-                           font=(self.F, 12), text_color=self.C_TEXT)
+                           font=(self.F, 13, "bold"), text_color=self.C_TEXT)
         tip.pack()
         sub = ctk.CTkLabel(win, text="", font=(self.F, 10), text_color=self.C_DIM,
                            wraplength=290)
-        sub.pack(pady=(2, 4))
+        sub.pack(pady=(3, 6))
 
         qr = ql.QrLogin()
         stop = threading.Event()
@@ -629,9 +687,9 @@ class App(ctk.CTk):
         bar = ctk.CTkFrame(win, fg_color="transparent")
         bar.pack(fill="x", padx=14, pady=(0, 14))
 
-        ctk.CTkButton(bar, text="刷新二维码", height=32, corner_radius=7,
+        ctk.CTkButton(bar, text="刷新二维码", height=34, corner_radius=10,
                       fg_color=self.C_MAIN, hover_color=self.C_MAIN_H,
-                      text_color="#20160f", font=(self.F, 12),
+                      text_color="#ffffff", font=(self.F, 12),
                       command=load_qr).pack(fill="x")
 
         def on_close():
@@ -649,18 +707,25 @@ class App(ctk.CTk):
         cfg = ensure_config()
         win = ctk.CTkToplevel(self)
         win.title("设置")
-        win.geometry("410x410")
+        win.geometry("410x360")
         win.configure(fg_color=self.C_BG)
         win.transient(self)
+        try:
+            win.grab_set()
+        except Exception:
+            pass
 
         def field(label, value):
-            ctk.CTkLabel(win, text=label, font=(self.F, 11),
+            ctk.CTkLabel(win, text=label, font=(self.F, 10),
                          text_color=self.C_DIM, anchor="w").pack(
-                fill="x", padx=18, pady=(10, 2))
-            e = ctk.CTkEntry(win, fg_color=self.C_CARD, border_color=self.C_LINE,
-                             text_color=self.C_TEXT)
+                fill="x", padx=20, pady=(12, 4))
+            e = ctk.CTkEntry(win, height=34, corner_radius=9,
+                             fg_color=self.C_CARD, border_color=self.C_LINE,
+                             border_width=1, text_color=self.C_TEXT,
+                             font=(self.F, 11),
+                             placeholder_text_color=self.C_DIM)
             e.insert(0, value or "")
-            e.pack(fill="x", padx=18)
+            e.pack(fill="x", padx=20)
             return e
 
         e_url = field("分享链接", cfg.get("share_url"))
@@ -680,8 +745,8 @@ class App(ctk.CTk):
         except Exception as e:
             st, msg = "expired", f"校验失败：{e}"
         row = ctk.CTkFrame(win, fg_color="transparent")
-        row.pack(fill="x", padx=18, pady=(14, 0))
-        ctk.CTkLabel(row, text=f"登录状态：{msg}", font=(self.F, 11),
+        row.pack(fill="x", padx=20, pady=(16, 0))
+        ctk.CTkLabel(row, text=f"登录状态：{msg}", font=(self.F, 10),
                      text_color=self.C_OK if st == "ok" else
                      (self.C_WARN if st == "net" else self.C_ERR)).pack(side="left")
 
@@ -697,9 +762,10 @@ class App(ctk.CTk):
 
             threading.Thread(target=work, daemon=True).start()
 
-        ctk.CTkButton(row, text="扫码登录", width=86, height=28, corner_radius=7,
+        ctk.CTkButton(row, text="扫码登录", width=84, height=28, corner_radius=8,
                       fg_color=self.C_MAIN, hover_color=self.C_MAIN_H,
-                      text_color="#20160f", command=relogin).pack(side="right", padx=(0, 6))
+                      text_color="#ffffff", font=(self.F, 10),
+                      command=relogin).pack(side="right", padx=(0, 4))
 
         def do_save():
             url = e_url.get().strip()
@@ -721,10 +787,10 @@ class App(ctk.CTk):
             self.say("设置已保存")
             self.run(self.task_start)
 
-        ctk.CTkButton(win, text="保存", height=36, corner_radius=8,
+        ctk.CTkButton(win, text="保存", height=38, corner_radius=10,
                       fg_color=self.C_MAIN, hover_color=self.C_MAIN_H,
-                      text_color="#20160f", font=(self.F, 13, "bold"),
-                      command=do_save).pack(fill="x", padx=18, pady=18)
+                      text_color="#ffffff", font=(self.F, 12, "bold"),
+                      command=do_save).pack(fill="x", padx=20, pady=(20, 18))
 
 
 if __name__ == "__main__":
