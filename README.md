@@ -6,6 +6,7 @@
 
 ![python](https://img.shields.io/badge/python-3.10+-3776AB?logo=python&logoColor=white)
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows&logoColor=white)
+![release](https://img.shields.io/github/v/release/yu-echo/quark-update-helper?color=2e6bda)
 ![by](https://img.shields.io/badge/by-Echo-orange)
 
 </div>
@@ -13,6 +14,12 @@
 ---
 
 ![界面](ui_final.png)
+
+## ⬇️ 下载
+
+**[⬇ 下载最新版本](https://github.com/yu-echo/quark-update-helper/releases/latest)** — Windows 10 / 11 x64，单文件免安装
+
+> 没有代码签名，首次运行若被 SmartScreen 拦下，点「更多信息」→「仍要运行」。
 
 ## ✨ 特点
 
@@ -25,7 +32,7 @@
 
 ## 🚀 使用
 
-1. 把 `夸克更新助手.exe` 放到任意目录（下载的文件会落在同一目录）
+1. 把下载到的 exe 放到任意目录（下载的文件会落在同一目录）
 2. 双击打开，首次用微信扫码登录
 3. 之后每次双击，剩下的事它自己办
 
