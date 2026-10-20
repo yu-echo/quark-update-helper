@@ -1,0 +1,6 @@
+customtkinter==6.0.0
+darkdetect==0.8.0
+pillow==12.3.0
+qrcode==8.2
+requests==2.34.2
+pyinstaller==5.13.2
