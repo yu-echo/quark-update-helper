@@ -7,6 +7,7 @@
 ![python](https://img.shields.io/badge/python-3.10+-3776AB?logo=python&logoColor=white)
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows&logoColor=white)
 ![release](https://img.shields.io/github/v/release/yu-echo/quark-update-helper?color=2e6bda)
+![license](https://img.shields.io/github/license/yu-echo/quark-update-helper?color=2e6bda)
 ![by](https://img.shields.io/badge/by-Echo-orange)
 
 </div>
@@ -44,6 +45,12 @@
 
 - [技术细节](docs/技术细节.md) — 接口、踩过的坑、构建方式
 - [更新记录](docs/更新记录.md)
+
+---
+
+## 📄 许可
+
+[MIT](LICENSE) © 2026 yu-echo
 
 ---
 
