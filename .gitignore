@@ -1,5 +1,4 @@
 # ── 本机凭据，绝不入库 ────────────────────────────────
-secret_local.py
 config.json
 state.json
 待办.txt

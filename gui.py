@@ -41,13 +41,11 @@ def resource(name: str) -> str:
     return str(base_dir() / name)
 
 
-# 内置 Cookie（首次运行写入隐藏配置，用户无需填写）
-# 真实值在 secret_local.py，那个文件不进 Git —— 账号凭据不能进仓库。
-# 缺少它时退化成空串，程序会直接走扫码登录，功能不受影响。
-try:
-    from secret_local import BUILTIN_COOKIE
-except Exception:
-    BUILTIN_COOKIE = ""
+# 不再内置账号。
+# 内置 Cookie 看着方便，其实是个坑：号一失效，用户拿到的是一堆 401，
+# 而不是一个明确的「请扫码」；而且把凭据焊死在 exe 里，换号就得重新打包。
+# 现在首次运行必定走微信扫码，凭据只存在本机 %LOCALAPPDATA%，随时可换。
+BUILTIN_COOKIE = ""
 
 DEFAULT_CFG = {
     "share_url": "https://pan.quark.cn/s/76d3b2071339",
@@ -401,7 +399,9 @@ class App(ctk.CTk):
         # 需要下载 → 先确认登录态
         self.set_state("校验登录…", self.C_WARN)
         if not self._cookie_ok():
-            self.say("登录已失效，请扫码登录")
+            # 从没登录过和登录过期是两回事，提示别混
+            self.say("首次使用，请用微信扫码登录" if not (self.cfg.get("cookie") or "").strip()
+                     else "登录已失效，请扫码登录")
             self.set_state("等待扫码", self.C_WARN)
             if not self._ask_login():
                 self.set_state("未登录，无法更新", self.C_ERR)
@@ -437,7 +437,10 @@ class App(ctk.CTk):
             self.set_hint("下载失败，请稍后重试")
 
     def _cookie_ok(self) -> bool:
-        st, msg = ql.QrLogin.verify(self.cfg.get("cookie") or "")
+        ck = (self.cfg.get("cookie") or "").strip()
+        if not ck:
+            return False        # 没登录过，别让 verify 报「已过期」误导人
+        st, msg = ql.QrLogin.verify(ck)
         self.say(msg)
         if st == "net":
             # 网络抖一下不算登录失效，先去试下载，真没权限会在转存那步报

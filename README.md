@@ -16,7 +16,7 @@
 ## ✨ 它做什么
 
 - 🔍 **开箱即用** — 双击就查，有新版自动下载并拉起，没新版直接启动本地最新那份
-- 🔐 **掉了会自己救** — 内置 Cookie 失效时弹微信二维码，扫码即换新凭据
+- 🔐 **不内置账号** — 首次运行弹微信二维码，扫码即用；凭据只存本机，号变了重新扫就行
 - 📦 **复用网盘副本** — 同一个版本只转存一次，之后直接取直链（省流量也避开一个坑，见下）
 - 🪟 **不留杂物** — 配置、状态、日志全在 `%LOCALAPPDATA%\QuarkUpdateHelper`（隐藏目录）
 - 🎨 **暖色界面** — 三行信息：来源 / 本地版本 / 网盘版本，加一条滚动日志
@@ -95,12 +95,13 @@ else:   pending.append(g)            # 真没有再转存
 python -m venv venv
 venv\Scripts\pip install -r requirements.txt
 
-# 内置账号（可选）：新建 secret_local.py，写入 BUILTIN_COOKIE = "ctoken=...; __pus=...;"
 python build.py     # 产物 dist/QuarkWatcher.exe
 ```
 
-> `secret_local.py` **不在仓库里**。没有它也能构建，只是首次运行必然走扫码登录。
-> 账号凭据不该进 Git —— 哪怕是私有仓库。
+> **构建产物不含任何账号凭据。** 首次运行会弹二维码，扫码后凭据写进
+> `%LOCALAPPDATA%\QuarkUpdateHelper\config.json`，只在本机。
+> 早先版本试过把 Cookie 焊进 exe，好处是开箱即用，坏处是号一失效你只会拿到一串
+> `401 require login`，还得重新打包才能换号 —— 已经去掉了。
 
 `build.py` 里那段 `dis._get_const_info` 猴补丁是给 CPython 3.10.0 的已知 bug 打的，
 不补 PyInstaller 会直接崩，换 3.11+ 可以删掉。
@@ -109,9 +110,10 @@ python build.py     # 产物 dist/QuarkWatcher.exe
 
 ## 🔒 安全说明
 
-- 仓库 **不含任何 Cookie**。`config.json` / `state.json` / `secret_local.py` 全部被 `.gitignore` 挡住
+- 仓库 **不含任何 Cookie**。`config.json` / `state.json` 都被 `.gitignore` 挡住
+- 打包产物**不含账号信息**，首次运行必须扫码
 - 运行时凭据只存在本机隐藏目录，不上传、不写日志
-- 日志里不打印完整 Cookie
+- 下载直链是带 `auth_key` / `token` 的签名 URL，日志里一律脱敏成 `with url: <path>`
 
 ---
 
